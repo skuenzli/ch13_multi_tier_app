@@ -3,27 +3,27 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
 )
 
 var (
-	db *sql.DB
+	db       *sql.DB
 	hostname string
 )
 
 func main() {
 	var err error
-	
+
 	hostname, err = os.Hostname()
 	log.Println("Initializing api server on", hostname)
-	
+
 	postgres_password_file := os.Getenv("POSTGRES_PASSWORD_FILE")
 	log.Println(os.ExpandEnv("Will read postgres password from '${POSTGRES_PASSWORD_FILE}'"))
 
@@ -49,7 +49,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	for i := 0; i < 100; i++ {
 		time.Sleep(time.Duration(i) * time.Second)
 
@@ -83,7 +83,7 @@ func main() {
 func serveIndex(resp http.ResponseWriter, req *http.Request) {
 	resp.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	resp.Header().Set("Connection", "close")
-	
+
 	fmt.Fprintln(resp, "Welcome to the API Server!")
 	fmt.Fprintln(resp, fmt.Sprintf("Container with id %s responded at %s", hostname, time.Now().UTC()))
 }
