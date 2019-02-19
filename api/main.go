@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
 	"io/ioutil"
@@ -98,22 +99,28 @@ func serveCounter(resp http.ResponseWriter, req *http.Request) {
 
 	_, err := db.Exec("insert into counter(val) values(0)")
 	if err != nil {
-		log.Fatal(err)
+		resp.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	rows, err := db.Query("select id from counter")
 	if err != nil {
-		log.Fatal(err)
+		resp.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
+	// Buffer the results so that we don't lose the ability to write a non-200 status code.
+	var out bytes.Buffer
 	for rows.Next() {
 		var id int
 
 		err = rows.Scan(&id)
 		if err != nil {
-			log.Fatal(err)
+			resp.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
-		fmt.Fprintf(resp, "ID: %d\n", id)
+		fmt.Fprintf(&out, "ID: %d\n", id)
 	}
+	out.WriteTo(resp)
 }
